@@ -1,0 +1,12 @@
+# Python bestanden die niet opgeslagen hoeven te worden
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtuele omgeving
+venv/
+.env/
+
+# IDE bestanden
+.vscode/
+.idea/
