@@ -248,10 +248,10 @@ class BoevenRedden(arcade.Window):
         """Teken de kaart, boefen, politie en de speler."""
 
         # --- Teken het huis ---
-        arcade.draw_rectangle_filled(HUIS_X, HUIS_Y, HUIS_BREEDTE, HUIS_HOOGTE,
-                                     arcade.color.YELLOW_GREEN)
-        arcade.draw_rectangle_outline(HUIS_X, HUIS_Y, HUIS_BREEDTE, HUIS_HOOGTE,
-                                      arcade.color.DARK_GREEN, 3)
+        arcade.draw_rect_filled(arcade.XYWH(HUIS_X, HUIS_Y, HUIS_BREEDTE, HUIS_HOOGTE),
+                                arcade.color.YELLOW_GREEN)
+        arcade.draw_rect_outline(arcade.XYWH(HUIS_X, HUIS_Y, HUIS_BREEDTE, HUIS_HOOGTE),
+                                 arcade.color.DARK_GREEN, 3)
         # Dak van het huis (driehoek)
         arcade.draw_triangle_filled(
             HUIS_X - 45, HUIS_Y + 40,
@@ -272,11 +272,11 @@ class BoevenRedden(arcade.Window):
         # --- Teken de politieauto's (rode rechthoeken) ---
         for p in self.politie:
             # Carrosserie
-            arcade.draw_rectangle_filled(p['x'], p['y'], POLITIE_BREEDTE, POLITIE_HOOGTE,
+            arcade.draw_rect_filled(arcade.XYWH(p['x'], p['y'], POLITIE_BREEDTE, POLITIE_HOOGTE),
                                          arcade.color.RED)
             # Zwaailicht (blauw blokje bovenop)
-            arcade.draw_rectangle_filled(p['x'], p['y'] + POLITIE_HOOGTE // 2 - 4,
-                                         14, 8, arcade.color.BLUE)
+            arcade.draw_rect_filled(arcade.XYWH(p['x'], p['y'] + POLITIE_HOOGTE // 2 - 4, 14, 8),
+                                         arcade.color.BLUE)
             arcade.draw_text("P", p['x'], p['y'] - 7,
                              arcade.color.WHITE, 12, bold=True, anchor_x="center")
 
@@ -284,12 +284,12 @@ class BoevenRedden(arcade.Window):
         # Knippert als je net geraakt bent (onkwetsbaar effect)
         zichtbaar = self.schade_timer <= 0 or int(self.schade_timer * 6) % 2 == 0
         if zichtbaar:
-            arcade.draw_rectangle_filled(self.speler_x, self.speler_y,
-                                         SPELER_BREEDTE, SPELER_HOOGTE,
+            arcade.draw_rect_filled(arcade.XYWH(self.speler_x, self.speler_y,
+                                         SPELER_BREEDTE, SPELER_HOOGTE),
                                          arcade.color.BLUE)
             # Voorruit
-            arcade.draw_rectangle_filled(self.speler_x, self.speler_y + 8,
-                                         20, 12, (173, 216, 230))
+            arcade.draw_rect_filled(arcade.XYWH(self.speler_x, self.speler_y + 8, 20, 12),
+                                         (173, 216, 230))
             arcade.draw_text("J", self.speler_x, self.speler_y - 9,
                              arcade.color.WHITE, 12, bold=True, anchor_x="center")
 
@@ -300,8 +300,8 @@ class BoevenRedden(arcade.Window):
         """Teken de informatiebalk bovenaan het scherm."""
 
         # Donkere achtergrond voor de balk
-        arcade.draw_rectangle_filled(VENSTER_BREEDTE // 2, VENSTER_HOOGTE - 18,
-                                     VENSTER_BREEDTE, 36, (0, 0, 0, 180))
+        arcade.draw_rect_filled(arcade.XYWH(VENSTER_BREEDTE // 2, VENSTER_HOOGTE - 18,
+                                     VENSTER_BREEDTE, 36), (0, 0, 0, 180))
 
         # Score (links)
         arcade.draw_text(f"Score: {self.score}", 10, VENSTER_HOOGTE - 28,
@@ -319,15 +319,15 @@ class BoevenRedden(arcade.Window):
         balk_y = VENSTER_HOOGTE - 24
 
         # Achtergrond van de levensbalk (donkerrood)
-        arcade.draw_rectangle_filled(balk_x + balk_breedte // 2, balk_y,
-                                     balk_breedte, balk_hoogte, arcade.color.DARK_RED)
+        arcade.draw_rect_filled(arcade.XYWH(balk_x + balk_breedte // 2, balk_y,
+                                     balk_breedte, balk_hoogte), arcade.color.DARK_RED)
 
         # Gevuld gedeelte van de levensbalk (groen of rood als laag)
         gevuld = int((self.speler_levens / MAX_LEVENS) * balk_breedte)
         if gevuld > 0:
             kleur = arcade.color.GREEN if self.speler_levens > 2 else (220, 80, 0)
-            arcade.draw_rectangle_filled(balk_x + gevuld // 2, balk_y,
-                                         gevuld, balk_hoogte, kleur)
+            arcade.draw_rect_filled(arcade.XYWH(balk_x + gevuld // 2, balk_y,
+                                         gevuld, balk_hoogte), kleur)
 
         arcade.draw_text("Auto:", balk_x - 44, balk_y - 8,
                          arcade.color.WHITE, 11)
@@ -336,8 +336,8 @@ class BoevenRedden(arcade.Window):
         """Teken het game over scherm."""
 
         # Donkere overlay over het spel
-        arcade.draw_rectangle_filled(VENSTER_BREEDTE // 2, VENSTER_HOOGTE // 2,
-                                     VENSTER_BREEDTE, VENSTER_HOOGTE, (0, 0, 0, 190))
+        arcade.draw_rect_filled(arcade.XYWH(VENSTER_BREEDTE // 2, VENSTER_HOOGTE // 2,
+                                     VENSTER_BREEDTE, VENSTER_HOOGTE), (0, 0, 0, 190))
 
         # Grote tekst: GAME OVER
         arcade.draw_text("GAME OVER!",
