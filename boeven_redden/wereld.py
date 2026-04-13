@@ -21,6 +21,8 @@ from .instellingen import (
     SPELER_HOOGTE,
     VENSTER_BREEDTE,
     VENSTER_HOOGTE,
+    WERELD_BREEDTE,
+    WERELD_HOOGTE,
 )
 from .modellen import Auto, Boef, Huis, PolitieAuto, SpelerAuto
 
@@ -29,8 +31,8 @@ def maak_speler() -> SpelerAuto:
     """Maak de spelersauto in het midden van het scherm."""
 
     return SpelerAuto(
-        x=float(VENSTER_BREEDTE // 2),
-        y=float(VENSTER_HOOGTE // 2),
+        x=float(HUIS_X + 170),
+        y=float(HUIS_Y),
         breedte=SPELER_BREEDTE,
         hoogte=SPELER_HOOGTE,
         levens=MAX_LEVENS,
@@ -55,8 +57,19 @@ def maak_obstakel_huizen() -> list[Huis]:
 def houd_auto_in_wereld(auto: Auto) -> None:
     """Laat een auto niet buiten het scherm rijden."""
 
-    auto.x = klem(auto.x, auto.breedte // 2, VENSTER_BREEDTE - auto.breedte // 2)
-    auto.y = klem(auto.y, auto.hoogte // 2, VENSTER_HOOGTE - auto.hoogte // 2)
+    auto.x = klem(auto.x, auto.breedte // 2, WERELD_BREEDTE - auto.breedte // 2)
+    auto.y = klem(auto.y, auto.hoogte // 2, WERELD_HOOGTE - auto.hoogte // 2)
+
+
+def klem_camera_midden(camera_x: float, camera_y: float) -> tuple[float, float]:
+    """Zorg dat het midden van de camera binnen de wereld blijft."""
+
+    halve_breedte = VENSTER_BREEDTE / 2
+    halve_hoogte = VENSTER_HOOGTE / 2
+    return (
+        klem(camera_x, halve_breedte, WERELD_BREEDTE - halve_breedte),
+        klem(camera_y, halve_hoogte, WERELD_HOOGTE - halve_hoogte),
+    )
 
 
 def punt_is_in_huis(x: float, y: float, huis: Huis, marge: float = 0) -> bool:
@@ -115,8 +128,8 @@ def maak_boef(
     """Zoek een nette plek voor een nieuwe boef."""
 
     for _ in range(200):
-        x = random.randint(60, VENSTER_BREEDTE - 60)
-        y = random.randint(60, VENSTER_HOOGTE - 60)
+        x = random.randint(60, WERELD_BREEDTE - 60)
+        y = random.randint(60, WERELD_HOOGTE - 60)
 
         ver_van_huis = afstand_tussen(x, y, huis.x, huis.y) > 110
         ver_van_speler = afstand_tussen(x, y, speler.x, speler.y) > 90
@@ -134,26 +147,55 @@ def maak_boef(
     return None
 
 
-def maak_politieauto() -> PolitieAuto:
-    """Laat een politieauto aan de rand van het scherm beginnen."""
+def maak_politieauto(rond_x: float, rond_y: float, huizen: list[Huis]) -> PolitieAuto:
+    """Laat een politieauto net buiten het zicht van de speler beginnen."""
 
-    kant = random.randint(0, 3)
-    if kant == 0:
-        x = random.randint(0, VENSTER_BREEDTE)
-        y = VENSTER_HOOGTE + 30
-    elif kant == 1:
-        x = VENSTER_BREEDTE + 30
-        y = random.randint(0, VENSTER_HOOGTE)
-    elif kant == 2:
-        x = random.randint(0, VENSTER_BREEDTE)
-        y = -30
-    else:
-        x = -30
-        y = random.randint(0, VENSTER_HOOGTE)
+    halve_breedte = VENSTER_BREEDTE // 2
+    halve_hoogte = VENSTER_HOOGTE // 2
+    camera_x, camera_y = klem_camera_midden(rond_x, rond_y)
+    zicht_links = camera_x - halve_breedte
+    zicht_rechts = camera_x + halve_breedte
+    zicht_onder = camera_y - halve_hoogte
+    zicht_boven = camera_y + halve_hoogte
+
+    for _ in range(200):
+        geldige_kanten: list[int] = []
+        if zicht_boven + 50 <= WERELD_HOOGTE - POLITIE_HOOGTE / 2:
+            geldige_kanten.append(0)
+        if zicht_rechts + 50 <= WERELD_BREEDTE - POLITIE_BREEDTE / 2:
+            geldige_kanten.append(1)
+        if zicht_onder - 50 >= POLITIE_HOOGTE / 2:
+            geldige_kanten.append(2)
+        if zicht_links - 50 >= POLITIE_BREEDTE / 2:
+            geldige_kanten.append(3)
+
+        kant = random.choice(geldige_kanten)
+        if kant == 0:
+            x = random.randint(int(zicht_links), int(zicht_rechts))
+            y = zicht_boven + 50
+        elif kant == 1:
+            x = zicht_rechts + 50
+            y = random.randint(int(zicht_onder), int(zicht_boven))
+        elif kant == 2:
+            x = random.randint(int(zicht_links), int(zicht_rechts))
+            y = zicht_onder - 50
+        else:
+            x = zicht_links - 50
+            y = random.randint(int(zicht_onder), int(zicht_boven))
+
+        politieauto = PolitieAuto(
+            x=float(klem(x, POLITIE_BREEDTE // 2, WERELD_BREEDTE - POLITIE_BREEDTE // 2)),
+            y=float(klem(y, POLITIE_HOOGTE // 2, WERELD_HOOGTE - POLITIE_HOOGTE // 2)),
+            breedte=POLITIE_BREEDTE,
+            hoogte=POLITIE_HOOGTE,
+        )
+
+        if all(not auto_raakt_huis(politieauto, huis) for huis in huizen):
+            return politieauto
 
     return PolitieAuto(
-        x=float(x),
-        y=float(y),
+        x=float(klem(zicht_rechts + 50, POLITIE_BREEDTE // 2, WERELD_BREEDTE - POLITIE_BREEDTE // 2)),
+        y=float(klem(camera_y, POLITIE_HOOGTE // 2, WERELD_HOOGTE - POLITIE_HOOGTE // 2)),
         breedte=POLITIE_BREEDTE,
         hoogte=POLITIE_HOOGTE,
     )

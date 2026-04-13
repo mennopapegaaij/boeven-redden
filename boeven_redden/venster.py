@@ -2,9 +2,12 @@
 
 import arcade
 
+from .helpers import klem
 from .instellingen import (
     BOEF_STRAAL,
     BOVENBALK_HOOGTE,
+    CAMERA_MARGE_X,
+    CAMERA_MARGE_Y,
     HUIS_DAK_HOOGTE,
     HUIS_DAK_OVERSTEEK,
     LEVENSBALK_BREEDTE,
@@ -15,6 +18,8 @@ from .instellingen import (
     VENSTER_BREEDTE,
     VENSTER_HOOGTE,
     VENSTER_TITEL,
+    WERELD_BREEDTE,
+    WERELD_HOOGTE,
 )
 from .spel_logica import SpelLogica
 
@@ -26,25 +31,83 @@ class BoevenReddenVenster(arcade.Window):
         super().__init__(VENSTER_BREEDTE, VENSTER_HOOGTE, VENSTER_TITEL)
         arcade.set_background_color(arcade.color.DARK_GREEN)
         self.spel = SpelLogica()
+        self.wereld_camera = arcade.Camera2D(
+            window=self,
+            position=(VENSTER_BREEDTE / 2, VENSTER_HOOGTE / 2),
+        )
+        self.hud_camera = arcade.Camera2D(
+            window=self,
+            position=(VENSTER_BREEDTE / 2, VENSTER_HOOGTE / 2),
+        )
+        self._zet_camera_op_speler()
 
     def on_update(self, delta_time: float) -> None:
         """Werk de spelregels bij."""
 
         self.spel.update(delta_time)
+        self._schuif_camera_mee()
 
     def on_draw(self) -> None:
         """Teken alles op het scherm."""
 
         self.clear()
+        self.wereld_camera.use()
+        self._teken_wereld_rand()
         self._teken_obstakel_huizen()
         self._teken_huis()
         self._teken_boefen()
         self._teken_politieautos()
         self._teken_speler()
+
+        self.hud_camera.use()
         self._teken_hud()
 
         if self.spel.status == STATUS_GAME_OVER:
             self._teken_game_over()
+
+    def _zet_camera_op_speler(self) -> None:
+        """Zet de camera netjes rond de speler."""
+
+        helft_breedte = VENSTER_BREEDTE / 2
+        helft_hoogte = VENSTER_HOOGTE / 2
+        camera_x = klem(self.spel.speler.x, helft_breedte, WERELD_BREEDTE - helft_breedte)
+        camera_y = klem(self.spel.speler.y, helft_hoogte, WERELD_HOOGTE - helft_hoogte)
+        self.wereld_camera.position = (camera_x, camera_y)
+
+    def _schuif_camera_mee(self) -> None:
+        """Schuif het scherm mee als de speler dicht bij de rand komt."""
+
+        helft_breedte = VENSTER_BREEDTE / 2
+        helft_hoogte = VENSTER_HOOGTE / 2
+        camera_x, camera_y = self.wereld_camera.position
+
+        links = camera_x - helft_breedte
+        rechts = camera_x + helft_breedte
+        onder = camera_y - helft_hoogte
+        boven = camera_y + helft_hoogte
+
+        if self.spel.speler.x < links + CAMERA_MARGE_X:
+            camera_x = self.spel.speler.x - CAMERA_MARGE_X + helft_breedte
+        elif self.spel.speler.x > rechts - CAMERA_MARGE_X:
+            camera_x = self.spel.speler.x + CAMERA_MARGE_X - helft_breedte
+
+        if self.spel.speler.y < onder + CAMERA_MARGE_Y:
+            camera_y = self.spel.speler.y - CAMERA_MARGE_Y + helft_hoogte
+        elif self.spel.speler.y > boven - CAMERA_MARGE_Y:
+            camera_y = self.spel.speler.y + CAMERA_MARGE_Y - helft_hoogte
+
+        camera_x = klem(camera_x, helft_breedte, WERELD_BREEDTE - helft_breedte)
+        camera_y = klem(camera_y, helft_hoogte, WERELD_HOOGTE - helft_hoogte)
+        self.wereld_camera.position = (camera_x, camera_y)
+
+    def _teken_wereld_rand(self) -> None:
+        """Teken de rand van de grote kaart."""
+
+        arcade.draw_rect_outline(
+            arcade.XYWH(WERELD_BREEDTE / 2, WERELD_HOOGTE / 2, WERELD_BREEDTE, WERELD_HOOGTE),
+            arcade.color.DARK_BROWN,
+            6,
+        )
 
     def _teken_huis(self) -> None:
         """Teken het huis."""
@@ -255,6 +318,7 @@ class BoevenReddenVenster(arcade.Window):
         if self.spel.status == STATUS_GAME_OVER:
             if key == arcade.key.ENTER:
                 self.spel.nieuw_spel()
+                self._zet_camera_op_speler()
             return
 
         if key in (arcade.key.UP, arcade.key.W):

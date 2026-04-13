@@ -168,4 +168,5 @@ class SpelLogica:
 
         if self.politie_timer >= politie_interval:
             self.politie_timer = 0.0
-            self.politieautos.append(maak_politieauto())
+            huizen = [self.huis, *self.obstakel_huizen]
+            self.politieautos.append(maak_politieauto(self.speler.x, self.speler.y, huizen))
