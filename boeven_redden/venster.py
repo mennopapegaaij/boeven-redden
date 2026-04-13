@@ -72,17 +72,35 @@ class BoevenReddenVenster(arcade.Window):
         """Teken alle boefen."""
 
         for boef in self.spel.boefen:
-            arcade.draw_circle_filled(boef.x, boef.y, BOEF_STRAAL, arcade.color.ORANGE)
-            arcade.draw_circle_outline(boef.x, boef.y, BOEF_STRAAL, (180, 80, 0), 2)
-            arcade.draw_text(
-                "B",
-                boef.x,
-                boef.y - 6,
-                arcade.color.BLACK,
-                12,
-                bold=True,
-                anchor_x="center",
-            )
+            self._teken_boef(boef.x, boef.y)
+
+    def _teken_boef(self, x: float, y: float) -> None:
+        """Teken een boef met masker en gestreept shirt."""
+
+        arcade.draw_ellipse_filled(x, y - 15, BOEF_STRAAL + 8, 10, (0, 0, 0, 80))
+
+        # Hoofd
+        arcade.draw_circle_filled(x, y + 12, 9, (255, 224, 189))
+        arcade.draw_circle_outline(x, y + 12, 9, (120, 90, 70), 2)
+
+        # Zwart masker
+        arcade.draw_rect_filled(arcade.XYWH(x, y + 11, 18, 6), arcade.color.BLACK)
+        arcade.draw_circle_filled(x - 4, y + 11, 1.2, arcade.color.WHITE)
+        arcade.draw_circle_filled(x + 4, y + 11, 1.2, arcade.color.WHITE)
+
+        # Gestreept boevenshirt
+        arcade.draw_rect_filled(arcade.XYWH(x, y - 2, 18, 20), (35, 35, 35))
+        arcade.draw_rect_filled(arcade.XYWH(x - 5, y - 2, 3, 20), arcade.color.WHITE)
+        arcade.draw_rect_filled(arcade.XYWH(x, y - 2, 3, 20), arcade.color.WHITE)
+        arcade.draw_rect_filled(arcade.XYWH(x + 5, y - 2, 3, 20), arcade.color.WHITE)
+
+        # Armen
+        arcade.draw_rect_filled(arcade.XYWH(x - 11, y - 3, 4, 14), (255, 224, 189))
+        arcade.draw_rect_filled(arcade.XYWH(x + 11, y - 3, 4, 14), (255, 224, 189))
+
+        # Benen
+        arcade.draw_rect_filled(arcade.XYWH(x - 4, y - 17, 4, 12), arcade.color.DARK_BLUE)
+        arcade.draw_rect_filled(arcade.XYWH(x + 4, y - 17, 4, 12), arcade.color.DARK_BLUE)
 
     def _teken_politieautos(self) -> None:
         """Teken alle politieautos."""
