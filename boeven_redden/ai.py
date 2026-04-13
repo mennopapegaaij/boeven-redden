@@ -7,14 +7,14 @@ Later kunnen we hier slimmere AI maken, zoals:
 """
 
 from .helpers import afstand_tussen
-from .instellingen import POLITIE_MAX_SNELHEID, POLITIE_START_SNELHEID
+from .instellingen import POLITIE_START_SNELHEID
 from .modellen import PolitieAuto, SpelerAuto
 
 
 def bereken_politie_snelheid(score: int) -> float:
-    """De politie wordt sneller als je meer punten hebt."""
+    """Geef de vaste snelheid van de politie terug."""
 
-    return min(POLITIE_START_SNELHEID + score * 0.15, POLITIE_MAX_SNELHEID)
+    return POLITIE_START_SNELHEID
 
 
 def achtervolg_speler(politieauto: PolitieAuto, speler: SpelerAuto, snelheid: float) -> None:
