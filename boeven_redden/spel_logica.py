@@ -14,6 +14,7 @@ from .helpers import afstand_tussen
 from .instellingen import (
     AANTAL_BOEFEN,
     BOEF_STRAAL,
+    MAX_BOEFEN_IN_AUTO,
     POLITIE_MIN_INTERVAL,
     POLITIE_START_INTERVAL,
     SCHADE_PAUZE,
@@ -106,7 +107,8 @@ class SpelLogica:
 
         for boef in self.boefen:
             afstand = afstand_tussen(self.speler.x, self.speler.y, boef.x, boef.y)
-            if afstand < raak_afstand:
+            kan_nog_meer_meenemen = self.boefen_mee < MAX_BOEFEN_IN_AUTO
+            if afstand < raak_afstand and kan_nog_meer_meenemen:
                 self.boefen_mee += 1
             else:
                 boefen_over.append(boef)

@@ -7,6 +7,7 @@ from .instellingen import (
     BOVENBALK_HOOGTE,
     LEVENSBALK_BREEDTE,
     LEVENSBALK_HOOGTE,
+    MAX_BOEFEN_IN_AUTO,
     MAX_LEVENS,
     STATUS_GAME_OVER,
     VENSTER_BREEDTE,
@@ -165,7 +166,7 @@ class BoevenReddenVenster(arcade.Window):
         )
 
         arcade.draw_text(
-            f"Boefen bij je: {self.spel.boefen_mee}",
+            f"Boef in auto: {self.spel.boefen_mee}/{MAX_BOEFEN_IN_AUTO}",
             VENSTER_BREEDTE // 2,
             VENSTER_HOOGTE - 28,
             arcade.color.ORANGE,
