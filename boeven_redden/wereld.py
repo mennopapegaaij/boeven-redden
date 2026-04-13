@@ -13,6 +13,10 @@ from .instellingen import (
     HUIS_HOOGTE,
     HUIS_X,
     HUIS_Y,
+    BOEF_SPAWN_BREEDTE,
+    BOEF_SPAWN_HOOGTE,
+    BOEF_SPAWN_VER_BREEDTE,
+    BOEF_SPAWN_VER_HOOGTE,
     MAX_LEVENS,
     OBSTAKEL_HUIZEN,
     POLITIE_BREEDTE,
@@ -127,22 +131,37 @@ def maak_boef(
 ) -> Boef | None:
     """Zoek een nette plek voor een nieuwe boef."""
 
-    for _ in range(200):
-        x = random.randint(60, WERELD_BREEDTE - 60)
-        y = random.randint(60, WERELD_HOOGTE - 60)
+    zoekgebieden = (
+        (BOEF_SPAWN_BREEDTE, BOEF_SPAWN_HOOGTE, 120),
+        (BOEF_SPAWN_VER_BREEDTE, BOEF_SPAWN_VER_HOOGTE, 80),
+        (WERELD_BREEDTE, WERELD_HOOGTE, 40),
+    )
 
-        ver_van_huis = afstand_tussen(x, y, huis.x, huis.y) > 110
-        ver_van_speler = afstand_tussen(x, y, speler.x, speler.y) > 90
-        niet_in_obstakel_huis = all(
-            not punt_is_in_huis(x, y, obstakel_huis, marge=20)
-            for obstakel_huis in obstakel_huizen
-        )
-        ver_van_andere_boef = all(
-            afstand_tussen(x, y, boef.x, boef.y) > 40 for boef in bestaande_boefen
-        )
+    for breedte, hoogte, pogingen in zoekgebieden:
+        min_x = max(60, int(speler.x - breedte / 2))
+        max_x = min(WERELD_BREEDTE - 60, int(speler.x + breedte / 2))
+        min_y = max(60, int(speler.y - hoogte / 2))
+        max_y = min(WERELD_HOOGTE - 60, int(speler.y + hoogte / 2))
 
-        if ver_van_huis and ver_van_speler and niet_in_obstakel_huis and ver_van_andere_boef:
-            return Boef(x=float(x), y=float(y))
+        if min_x >= max_x or min_y >= max_y:
+            continue
+
+        for _ in range(pogingen):
+            x = random.randint(min_x, max_x)
+            y = random.randint(min_y, max_y)
+
+            ver_van_huis = afstand_tussen(x, y, huis.x, huis.y) > 110
+            ver_van_speler = afstand_tussen(x, y, speler.x, speler.y) > 90
+            niet_in_obstakel_huis = all(
+                not punt_is_in_huis(x, y, obstakel_huis, marge=20)
+                for obstakel_huis in obstakel_huizen
+            )
+            ver_van_andere_boef = all(
+                afstand_tussen(x, y, boef.x, boef.y) > 40 for boef in bestaande_boefen
+            )
+
+            if ver_van_huis and ver_van_speler and niet_in_obstakel_huis and ver_van_andere_boef:
+                return Boef(x=float(x), y=float(y))
 
     return None
 
