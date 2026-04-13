@@ -8,6 +8,8 @@ import random
 from .helpers import afstand_tussen, klem
 from .instellingen import (
     HUIS_BREEDTE,
+    HUIS_DAK_HOOGTE,
+    HUIS_DAK_OVERSTEEK,
     HUIS_HOOGTE,
     HUIS_X,
     HUIS_Y,
@@ -60,10 +62,10 @@ def houd_auto_in_wereld(auto: Auto) -> None:
 def punt_is_in_huis(x: float, y: float, huis: Huis, marge: float = 0) -> bool:
     """Controleer of een punt in of te dicht bij een huis staat."""
 
-    links = huis.x - huis.breedte / 2 - marge
-    rechts = huis.x + huis.breedte / 2 + marge
+    links = huis.x - huis.breedte / 2 - HUIS_DAK_OVERSTEEK - marge
+    rechts = huis.x + huis.breedte / 2 + HUIS_DAK_OVERSTEEK + marge
     onder = huis.y - huis.hoogte / 2 - marge
-    boven = huis.y + huis.hoogte / 2 + marge
+    boven = huis.y + huis.hoogte / 2 + HUIS_DAK_HOOGTE + marge
     return links <= x <= rechts and onder <= y <= boven
 
 
@@ -75,10 +77,10 @@ def auto_raakt_huis(auto: Auto, huis: Huis) -> bool:
     onder_auto = auto.y - auto.hoogte / 2
     boven_auto = auto.y + auto.hoogte / 2
 
-    links_huis = huis.x - huis.breedte / 2
-    rechts_huis = huis.x + huis.breedte / 2
+    links_huis = huis.x - huis.breedte / 2 - HUIS_DAK_OVERSTEEK
+    rechts_huis = huis.x + huis.breedte / 2 + HUIS_DAK_OVERSTEEK
     onder_huis = huis.y - huis.hoogte / 2
-    boven_huis = huis.y + huis.hoogte / 2
+    boven_huis = huis.y + huis.hoogte / 2 + HUIS_DAK_HOOGTE
 
     return (
         links_auto < rechts_huis

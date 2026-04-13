@@ -5,6 +5,8 @@ import arcade
 from .instellingen import (
     BOEF_STRAAL,
     BOVENBALK_HOOGTE,
+    HUIS_DAK_HOOGTE,
+    HUIS_DAK_OVERSTEEK,
     LEVENSBALK_BREEDTE,
     LEVENSBALK_HOOGTE,
     MAX_BOEFEN_IN_AUTO,
@@ -79,12 +81,12 @@ class BoevenReddenVenster(arcade.Window):
         arcade.draw_rect_filled(rect, kleur)
         arcade.draw_rect_outline(rect, arcade.color.DARK_GREEN, 3)
         arcade.draw_triangle_filled(
-            x - breedte / 2 - 5,
+            x - breedte / 2 - HUIS_DAK_OVERSTEEK,
             y + hoogte / 2,
-            x + breedte / 2 + 5,
+            x + breedte / 2 + HUIS_DAK_OVERSTEEK,
             y + hoogte / 2,
             x,
-            y + hoogte / 2 + 35,
+            y + hoogte / 2 + HUIS_DAK_HOOGTE,
             arcade.color.BROWN,
         )
         arcade.draw_rect_filled(arcade.XYWH(x, y - 10, 18, 26), arcade.color.DARK_BROWN)
