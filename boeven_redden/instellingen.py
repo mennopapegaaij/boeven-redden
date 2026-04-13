@@ -24,6 +24,12 @@ HUIS_X = 100
 HUIS_Y = 100
 HUIS_BREEDTE = 80
 HUIS_HOOGTE = 80
+OBSTAKEL_HUIZEN = (
+    (260, 210, 110, 90),
+    (650, 190, 120, 90),
+    (320, 520, 100, 80),
+    (700, 500, 110, 90),
+)
 
 STATUS_SPELEN = "spelen"
 STATUS_GAME_OVER = "game_over"

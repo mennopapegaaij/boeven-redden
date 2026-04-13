@@ -17,14 +17,17 @@ def bereken_politie_snelheid(score: int) -> float:
     return POLITIE_START_SNELHEID
 
 
-def achtervolg_speler(politieauto: PolitieAuto, speler: SpelerAuto, snelheid: float) -> None:
-    """Beweeg een politieauto recht op de speler af."""
+def bereken_achtervolging_stap(
+    politieauto: PolitieAuto,
+    speler: SpelerAuto,
+    snelheid: float,
+) -> tuple[float, float]:
+    """Bereken hoe ver een politieauto deze beurt wil rijden."""
 
     afstand = afstand_tussen(politieauto.x, politieauto.y, speler.x, speler.y)
     if afstand <= 1:
-        return
+        return 0.0, 0.0
 
     dx = speler.x - politieauto.x
     dy = speler.y - politieauto.y
-    politieauto.x += (dx / afstand) * snelheid
-    politieauto.y += (dy / afstand) * snelheid
+    return (dx / afstand) * snelheid, (dy / afstand) * snelheid

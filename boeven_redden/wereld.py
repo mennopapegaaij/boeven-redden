@@ -12,6 +12,7 @@ from .instellingen import (
     HUIS_X,
     HUIS_Y,
     MAX_LEVENS,
+    OBSTAKEL_HUIZEN,
     POLITIE_BREEDTE,
     POLITIE_HOOGTE,
     SPELER_BREEDTE,
@@ -40,6 +41,15 @@ def maak_huis() -> Huis:
     return Huis(x=HUIS_X, y=HUIS_Y, breedte=HUIS_BREEDTE, hoogte=HUIS_HOOGTE)
 
 
+def maak_obstakel_huizen() -> list[Huis]:
+    """Maak extra huizen waar auto's niet doorheen kunnen."""
+
+    return [
+        Huis(x=x, y=y, breedte=breedte, hoogte=hoogte)
+        for x, y, breedte, hoogte in OBSTAKEL_HUIZEN
+    ]
+
+
 def houd_auto_in_wereld(auto: Auto) -> None:
     """Laat een auto niet buiten het scherm rijden."""
 
@@ -47,7 +57,59 @@ def houd_auto_in_wereld(auto: Auto) -> None:
     auto.y = klem(auto.y, auto.hoogte // 2, VENSTER_HOOGTE - auto.hoogte // 2)
 
 
-def maak_boef(speler: SpelerAuto, huis: Huis, bestaande_boefen: list[Boef]) -> Boef | None:
+def punt_is_in_huis(x: float, y: float, huis: Huis, marge: float = 0) -> bool:
+    """Controleer of een punt in of te dicht bij een huis staat."""
+
+    links = huis.x - huis.breedte / 2 - marge
+    rechts = huis.x + huis.breedte / 2 + marge
+    onder = huis.y - huis.hoogte / 2 - marge
+    boven = huis.y + huis.hoogte / 2 + marge
+    return links <= x <= rechts and onder <= y <= boven
+
+
+def auto_raakt_huis(auto: Auto, huis: Huis) -> bool:
+    """Controleer of een auto tegen een huis botst."""
+
+    links_auto = auto.x - auto.breedte / 2
+    rechts_auto = auto.x + auto.breedte / 2
+    onder_auto = auto.y - auto.hoogte / 2
+    boven_auto = auto.y + auto.hoogte / 2
+
+    links_huis = huis.x - huis.breedte / 2
+    rechts_huis = huis.x + huis.breedte / 2
+    onder_huis = huis.y - huis.hoogte / 2
+    boven_huis = huis.y + huis.hoogte / 2
+
+    return (
+        links_auto < rechts_huis
+        and rechts_auto > links_huis
+        and onder_auto < boven_huis
+        and boven_auto > onder_huis
+    )
+
+
+def verplaats_auto_met_huizen(auto: Auto, dx: float, dy: float, huizen: list[Huis]) -> None:
+    """Beweeg een auto, maar stop als er een huis in de weg staat."""
+
+    oude_x = auto.x
+    auto.x += dx
+    houd_auto_in_wereld(auto)
+    if any(auto_raakt_huis(auto, huis) for huis in huizen):
+        auto.x = oude_x
+
+    oude_y = auto.y
+    auto.y += dy
+    houd_auto_in_wereld(auto)
+    if any(auto_raakt_huis(auto, huis) for huis in huizen):
+        auto.y = oude_y
+
+
+def maak_boef(
+    speler: SpelerAuto,
+    huis: Huis,
+    obstakel_huizen: list[Huis],
+    bestaande_boefen: list[Boef],
+) -> Boef | None:
     """Zoek een nette plek voor een nieuwe boef."""
 
     for _ in range(200):
@@ -56,11 +118,15 @@ def maak_boef(speler: SpelerAuto, huis: Huis, bestaande_boefen: list[Boef]) -> B
 
         ver_van_huis = afstand_tussen(x, y, huis.x, huis.y) > 110
         ver_van_speler = afstand_tussen(x, y, speler.x, speler.y) > 90
+        niet_in_obstakel_huis = all(
+            not punt_is_in_huis(x, y, obstakel_huis, marge=20)
+            for obstakel_huis in obstakel_huizen
+        )
         ver_van_andere_boef = all(
             afstand_tussen(x, y, boef.x, boef.y) > 40 for boef in bestaande_boefen
         )
 
-        if ver_van_huis and ver_van_speler and ver_van_andere_boef:
+        if ver_van_huis and ver_van_speler and niet_in_obstakel_huis and ver_van_andere_boef:
             return Boef(x=float(x), y=float(y))
 
     return None

@@ -9,7 +9,7 @@ Het tekenen zit expres ergens anders. Zo kunnen we later
 makkelijk muren, botsingen en slimmere AI toevoegen.
 """
 
-from .ai import achtervolg_speler, bereken_politie_snelheid
+from .ai import bereken_achtervolging_stap, bereken_politie_snelheid
 from .helpers import afstand_tussen
 from .instellingen import (
     AANTAL_BOEFEN,
@@ -23,7 +23,14 @@ from .instellingen import (
     STATUS_SPELEN,
 )
 from .modellen import Boef, Huis, InvoerStatus, PolitieAuto, SpelerAuto
-from .wereld import houd_auto_in_wereld, maak_boef, maak_huis, maak_politieauto, maak_speler
+from .wereld import (
+    maak_boef,
+    maak_huis,
+    maak_obstakel_huizen,
+    maak_politieauto,
+    maak_speler,
+    verplaats_auto_met_huizen,
+)
 
 
 class SpelLogica:
@@ -37,6 +44,7 @@ class SpelLogica:
 
         self.speler: SpelerAuto = maak_speler()
         self.huis: Huis = maak_huis()
+        self.obstakel_huizen: list[Huis] = maak_obstakel_huizen()
         self.invoer = InvoerStatus()
         self.boefen: list[Boef] = []
         self.politieautos: list[PolitieAuto] = []
@@ -66,7 +74,12 @@ class SpelLogica:
         """Zorg dat er altijd genoeg boefen op de kaart staan."""
 
         while len(self.boefen) < AANTAL_BOEFEN:
-            nieuwe_boef = maak_boef(self.speler, self.huis, self.boefen)
+            nieuwe_boef = maak_boef(
+                self.speler,
+                self.huis,
+                self.obstakel_huizen,
+                self.boefen,
+            )
             if nieuwe_boef is None:
                 break
             self.boefen.append(nieuwe_boef)
@@ -74,17 +87,18 @@ class SpelLogica:
     def _beweeg_speler(self) -> None:
         """Verplaats de speler met de toetsen."""
 
+        dx = 0.0
+        dy = 0.0
         if self.invoer.omhoog:
-            self.speler.y += SPELER_SNELHEID
+            dy += SPELER_SNELHEID
         if self.invoer.omlaag:
-            self.speler.y -= SPELER_SNELHEID
+            dy -= SPELER_SNELHEID
         if self.invoer.links:
-            self.speler.x -= SPELER_SNELHEID
+            dx -= SPELER_SNELHEID
         if self.invoer.rechts:
-            self.speler.x += SPELER_SNELHEID
+            dx += SPELER_SNELHEID
 
-        # Later kunnen hier ook muren en wegen worden gecontroleerd.
-        houd_auto_in_wereld(self.speler)
+        verplaats_auto_met_huizen(self.speler, dx, dy, self.obstakel_huizen)
 
     def _update_schade_timer(self, delta_time: float) -> None:
         """Laat de korte onkwetsbare tijd langzaam aflopen."""
@@ -97,7 +111,8 @@ class SpelLogica:
 
         snelheid = bereken_politie_snelheid(self.score)
         for politieauto in self.politieautos:
-            achtervolg_speler(politieauto, self.speler, snelheid)
+            dx, dy = bereken_achtervolging_stap(politieauto, self.speler, snelheid)
+            verplaats_auto_met_huizen(politieauto, dx, dy, self.obstakel_huizen)
 
     def _pak_boefen_op(self) -> None:
         """Pak boefen op als de speler dichtbij komt."""

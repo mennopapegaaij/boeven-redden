@@ -34,6 +34,7 @@ class BoevenReddenVenster(arcade.Window):
         """Teken alles op het scherm."""
 
         self.clear()
+        self._teken_obstakel_huizen()
         self._teken_huis()
         self._teken_boefen()
         self._teken_politieautos()
@@ -47,18 +48,7 @@ class BoevenReddenVenster(arcade.Window):
         """Teken het huis."""
 
         huis = self.spel.huis
-        rect = arcade.XYWH(huis.x, huis.y, huis.breedte, huis.hoogte)
-        arcade.draw_rect_filled(rect, arcade.color.YELLOW_GREEN)
-        arcade.draw_rect_outline(rect, arcade.color.DARK_GREEN, 3)
-        arcade.draw_triangle_filled(
-            huis.x - 45,
-            huis.y + 40,
-            huis.x + 45,
-            huis.y + 40,
-            huis.x,
-            huis.y + 75,
-            arcade.color.BROWN,
-        )
+        self._teken_gebouw(huis.x, huis.y, huis.breedte, huis.hoogte, arcade.color.YELLOW_GREEN)
         arcade.draw_text(
             "THUIS",
             huis.x,
@@ -68,6 +58,38 @@ class BoevenReddenVenster(arcade.Window):
             bold=True,
             anchor_x="center",
         )
+
+    def _teken_obstakel_huizen(self) -> None:
+        """Teken de huizen waar je niet doorheen kunt rijden."""
+
+        for huis in self.spel.obstakel_huizen:
+            self._teken_gebouw(huis.x, huis.y, huis.breedte, huis.hoogte, arcade.color.LIGHT_GRAY)
+
+    def _teken_gebouw(
+        self,
+        x: float,
+        y: float,
+        breedte: int,
+        hoogte: int,
+        kleur: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> None:
+        """Teken een huisje."""
+
+        rect = arcade.XYWH(x, y, breedte, hoogte)
+        arcade.draw_rect_filled(rect, kleur)
+        arcade.draw_rect_outline(rect, arcade.color.DARK_GREEN, 3)
+        arcade.draw_triangle_filled(
+            x - breedte / 2 - 5,
+            y + hoogte / 2,
+            x + breedte / 2 + 5,
+            y + hoogte / 2,
+            x,
+            y + hoogte / 2 + 35,
+            arcade.color.BROWN,
+        )
+        arcade.draw_rect_filled(arcade.XYWH(x, y - 10, 18, 26), arcade.color.DARK_BROWN)
+        arcade.draw_rect_filled(arcade.XYWH(x - breedte / 4, y + 5, 16, 16), arcade.color.SKY_BLUE)
+        arcade.draw_rect_filled(arcade.XYWH(x + breedte / 4, y + 5, 16, 16), arcade.color.SKY_BLUE)
 
     def _teken_boefen(self) -> None:
         """Teken alle boefen."""
