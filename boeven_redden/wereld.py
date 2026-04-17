@@ -52,10 +52,17 @@ def maak_huis() -> Huis:
 def maak_obstakel_huizen() -> list[Huis]:
     """Maak extra huizen waar auto's niet doorheen kunnen."""
 
-    return [
-        Huis(x=x, y=y, breedte=breedte, hoogte=hoogte)
-        for x, y, breedte, hoogte in OBSTAKEL_HUIZEN
-    ]
+    huizen: list[Huis] = []
+    for x, y, breedte, hoogte in OBSTAKEL_HUIZEN:
+        huis = Huis(x=x, y=y, breedte=breedte, hoogte=hoogte)
+        links = huis.x - huis.breedte / 2 - HUIS_DAK_OVERSTEEK
+        rechts = huis.x + huis.breedte / 2 + HUIS_DAK_OVERSTEEK
+        onder = huis.y - huis.hoogte / 2
+        boven = huis.y + huis.hoogte / 2 + HUIS_DAK_HOOGTE
+        if links >= 0 and rechts <= WERELD_BREEDTE and onder >= 0 and boven <= WERELD_HOOGTE:
+            huizen.append(huis)
+
+    return huizen
 
 
 def houd_auto_in_wereld(auto: Auto) -> None:
