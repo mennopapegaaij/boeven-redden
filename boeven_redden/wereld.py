@@ -7,16 +7,15 @@ import random
 
 from .helpers import afstand_tussen, klem
 from .instellingen import (
+    AANTAL_BOEFEN,
+    BOEF_VAKKEN_X,
+    BOEF_VAKKEN_Y,
     HUIS_BREEDTE,
     HUIS_DAK_HOOGTE,
     HUIS_DAK_OVERSTEEK,
     HUIS_HOOGTE,
     HUIS_X,
     HUIS_Y,
-    BOEF_SPAWN_BREEDTE,
-    BOEF_SPAWN_HOOGTE,
-    BOEF_SPAWN_VER_BREEDTE,
-    BOEF_SPAWN_VER_HOOGTE,
     MAX_LEVENS,
     OBSTAKEL_HUIZEN,
     POLITIE_BREEDTE,
@@ -138,22 +137,35 @@ def maak_boef(
 ) -> Boef | None:
     """Zoek een nette plek voor een nieuwe boef."""
 
-    zoekgebieden = (
-        (BOEF_SPAWN_BREEDTE, BOEF_SPAWN_HOOGTE, 120),
-        (BOEF_SPAWN_VER_BREEDTE, BOEF_SPAWN_VER_HOOGTE, 80),
-        (WERELD_BREEDTE, WERELD_HOOGTE, 40),
-    )
+    vak_breedte = WERELD_BREEDTE / BOEF_VAKKEN_X
+    vak_hoogte = WERELD_HOOGTE / BOEF_VAKKEN_Y
+    boeven_per_vak: dict[tuple[int, int], int] = {
+        (vak_x, vak_y): 0
+        for vak_x in range(BOEF_VAKKEN_X)
+        for vak_y in range(BOEF_VAKKEN_Y)
+    }
 
-    for breedte, hoogte, pogingen in zoekgebieden:
-        min_x = max(60, int(speler.x - breedte / 2))
-        max_x = min(WERELD_BREEDTE - 60, int(speler.x + breedte / 2))
-        min_y = max(60, int(speler.y - hoogte / 2))
-        max_y = min(WERELD_HOOGTE - 60, int(speler.y + hoogte / 2))
+    for boef in bestaande_boefen:
+        vak_x = min(BOEF_VAKKEN_X - 1, int(boef.x / vak_breedte))
+        vak_y = min(BOEF_VAKKEN_Y - 1, int(boef.y / vak_hoogte))
+        boeven_per_vak[(vak_x, vak_y)] += 1
+
+    # Kies eerst vakken waar nog weinig boefen staan.
+    vakken = list(boeven_per_vak.keys())
+    random.shuffle(vakken)
+    vakken.sort(key=lambda vak: boeven_per_vak[vak])
+
+    pogingen_per_vak = max(20, 180 // max(AANTAL_BOEFEN, 1))
+    for vak_x, vak_y in vakken:
+        min_x = max(60, int(vak_x * vak_breedte) + 60)
+        max_x = min(WERELD_BREEDTE - 60, int((vak_x + 1) * vak_breedte) - 60)
+        min_y = max(60, int(vak_y * vak_hoogte) + 60)
+        max_y = min(WERELD_HOOGTE - 60, int((vak_y + 1) * vak_hoogte) - 60)
 
         if min_x >= max_x or min_y >= max_y:
             continue
 
-        for _ in range(pogingen):
+        for _ in range(pogingen_per_vak):
             x = random.randint(min_x, max_x)
             y = random.randint(min_y, max_y)
 
@@ -164,7 +176,7 @@ def maak_boef(
                 for obstakel_huis in obstakel_huizen
             )
             ver_van_andere_boef = all(
-                afstand_tussen(x, y, boef.x, boef.y) > 40 for boef in bestaande_boefen
+                afstand_tussen(x, y, boef.x, boef.y) > 140 for boef in bestaande_boefen
             )
 
             if ver_van_huis and ver_van_speler and niet_in_obstakel_huis and ver_van_andere_boef:
