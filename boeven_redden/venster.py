@@ -3,6 +3,7 @@
 import math
 
 import arcade
+from arcade import shape_list
 
 from .helpers import klem
 from .instellingen import (
@@ -41,6 +42,7 @@ class BoevenReddenVenster(arcade.Window):
             window=self,
             position=(VENSTER_BREEDTE / 2, VENSTER_HOOGTE / 2),
         )
+        self.weg_vormen = self._maak_weg_vormen()
         self._zet_camera_op_speler()
 
     def on_update(self, delta_time: float) -> None:
@@ -116,28 +118,52 @@ class BoevenReddenVenster(arcade.Window):
     def _teken_wegen(self) -> None:
         """Teken alle wegen."""
 
+        self.weg_vormen.draw()
+
+    def _maak_weg_vormen(self) -> shape_list.ShapeElementList:
+        """Maak alle weg-vormen een keer aan voor sneller tekenen."""
+
+        weg_vormen = shape_list.ShapeElementList()
+
         for weg in self.spel.wegen:
-            arcade.draw_rect_filled(
-                arcade.XYWH(weg.x, weg.y, weg.breedte, weg.hoogte),
-                (55, 55, 55),
+            weg_vormen.append(
+                shape_list.create_rectangle_filled(
+                    weg.x,
+                    weg.y,
+                    weg.breedte,
+                    weg.hoogte,
+                    (55, 55, 55, 255),
+                )
             )
 
             if weg.breedte >= weg.hoogte:
                 start_x = int(weg.x - weg.breedte / 2 + 40)
                 eind_x = int(weg.x + weg.breedte / 2 - 40)
                 for streep_x in range(start_x, eind_x, 90):
-                    arcade.draw_rect_filled(
-                        arcade.XYWH(streep_x, weg.y, 46, 8),
-                        arcade.color.WHITE,
+                    weg_vormen.append(
+                        shape_list.create_rectangle_filled(
+                            streep_x,
+                            weg.y,
+                            46,
+                            8,
+                            (255, 255, 255, 255),
+                        )
                     )
             else:
                 start_y = int(weg.y - weg.hoogte / 2 + 40)
                 eind_y = int(weg.y + weg.hoogte / 2 - 40)
                 for streep_y in range(start_y, eind_y, 90):
-                    arcade.draw_rect_filled(
-                        arcade.XYWH(weg.x, streep_y, 8, 46),
-                        arcade.color.WHITE,
+                    weg_vormen.append(
+                        shape_list.create_rectangle_filled(
+                            weg.x,
+                            streep_y,
+                            8,
+                            46,
+                            (255, 255, 255, 255),
+                        )
                     )
+
+        return weg_vormen
 
     def _teken_huis(self) -> None:
         """Teken het huis."""
