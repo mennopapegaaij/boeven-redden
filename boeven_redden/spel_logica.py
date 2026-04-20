@@ -19,16 +19,19 @@ from .instellingen import (
     POLITIE_START_INTERVAL,
     SCHADE_PAUZE,
     SPELER_SNELHEID,
+    SPELER_WEG_SNELHEID_FACTOR,
     STATUS_GAME_OVER,
     STATUS_SPELEN,
 )
-from .modellen import Boef, Huis, InvoerStatus, PolitieAuto, SpelerAuto
+from .modellen import Boef, Huis, InvoerStatus, PolitieAuto, SpelerAuto, Weg
 from .wereld import (
+    auto_is_op_weg,
     maak_boef,
     maak_huis,
     maak_obstakel_huizen,
     maak_politieauto,
     maak_speler,
+    maak_wegen,
     verplaats_auto_met_huizen,
 )
 
@@ -44,6 +47,7 @@ class SpelLogica:
 
         self.speler: SpelerAuto = maak_speler()
         self.huis: Huis = maak_huis()
+        self.wegen: list[Weg] = maak_wegen()
         self.obstakel_huizen: list[Huis] = maak_obstakel_huizen()
         self.invoer = InvoerStatus()
         self.boefen: list[Boef] = []
@@ -87,16 +91,20 @@ class SpelLogica:
     def _beweeg_speler(self) -> None:
         """Verplaats de speler met de toetsen."""
 
+        snelheid = SPELER_SNELHEID
+        if auto_is_op_weg(self.speler, self.wegen):
+            snelheid *= SPELER_WEG_SNELHEID_FACTOR
+
         dx = 0.0
         dy = 0.0
         if self.invoer.omhoog:
-            dy += SPELER_SNELHEID
+            dy += snelheid
         if self.invoer.omlaag:
-            dy -= SPELER_SNELHEID
+            dy -= snelheid
         if self.invoer.links:
-            dx -= SPELER_SNELHEID
+            dx -= snelheid
         if self.invoer.rechts:
-            dx += SPELER_SNELHEID
+            dx += snelheid
 
         verplaats_auto_met_huizen(self.speler, dx, dy, self.obstakel_huizen)
 

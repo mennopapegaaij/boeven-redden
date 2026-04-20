@@ -24,10 +24,11 @@ from .instellingen import (
     SPELER_HOOGTE,
     VENSTER_BREEDTE,
     VENSTER_HOOGTE,
+    WEGEN,
     WERELD_BREEDTE,
     WERELD_HOOGTE,
 )
-from .modellen import Auto, Boef, Huis, PolitieAuto, SpelerAuto
+from .modellen import Auto, Boef, Huis, PolitieAuto, SpelerAuto, Weg
 
 
 def maak_speler() -> SpelerAuto:
@@ -62,6 +63,15 @@ def maak_obstakel_huizen() -> list[Huis]:
             huizen.append(huis)
 
     return huizen
+
+
+def maak_wegen() -> list[Weg]:
+    """Maak de wegen op de kaart."""
+
+    return [
+        Weg(x=x, y=y, breedte=breedte, hoogte=hoogte)
+        for x, y, breedte, hoogte in WEGEN
+    ]
 
 
 def houd_auto_in_wereld(auto: Auto) -> None:
@@ -111,6 +121,31 @@ def auto_raakt_huis(auto: Auto, huis: Huis) -> bool:
         and onder_auto < boven_huis
         and boven_auto > onder_huis
     )
+
+
+def auto_is_op_weg(auto: Auto, wegen: list[Weg]) -> bool:
+    """Controleer of een auto op een stuk weg staat."""
+
+    links_auto = auto.x - auto.breedte / 2
+    rechts_auto = auto.x + auto.breedte / 2
+    onder_auto = auto.y - auto.hoogte / 2
+    boven_auto = auto.y + auto.hoogte / 2
+
+    for weg in wegen:
+        links_weg = weg.x - weg.breedte / 2
+        rechts_weg = weg.x + weg.breedte / 2
+        onder_weg = weg.y - weg.hoogte / 2
+        boven_weg = weg.y + weg.hoogte / 2
+
+        if (
+            links_auto < rechts_weg
+            and rechts_auto > links_weg
+            and onder_auto < boven_weg
+            and boven_auto > onder_weg
+        ):
+            return True
+
+    return False
 
 
 def verplaats_auto_met_huizen(auto: Auto, dx: float, dy: float, huizen: list[Huis]) -> None:

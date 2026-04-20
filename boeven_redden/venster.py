@@ -55,6 +55,7 @@ class BoevenReddenVenster(arcade.Window):
         self.clear()
         self.wereld_camera.use()
         self._teken_wereld_rand()
+        self._teken_wegen()
         self._teken_obstakel_huizen()
         self._teken_huis()
         self._teken_boefen()
@@ -111,6 +112,32 @@ class BoevenReddenVenster(arcade.Window):
             arcade.color.DARK_BROWN,
             6,
         )
+
+    def _teken_wegen(self) -> None:
+        """Teken alle wegen."""
+
+        for weg in self.spel.wegen:
+            arcade.draw_rect_filled(
+                arcade.XYWH(weg.x, weg.y, weg.breedte, weg.hoogte),
+                (55, 55, 55),
+            )
+
+            if weg.breedte >= weg.hoogte:
+                start_x = int(weg.x - weg.breedte / 2 + 40)
+                eind_x = int(weg.x + weg.breedte / 2 - 40)
+                for streep_x in range(start_x, eind_x, 90):
+                    arcade.draw_rect_filled(
+                        arcade.XYWH(streep_x, weg.y, 46, 8),
+                        arcade.color.WHITE,
+                    )
+            else:
+                start_y = int(weg.y - weg.hoogte / 2 + 40)
+                eind_y = int(weg.y + weg.hoogte / 2 - 40)
+                for streep_y in range(start_y, eind_y, 90):
+                    arcade.draw_rect_filled(
+                        arcade.XYWH(weg.x, streep_y, 8, 46),
+                        arcade.color.WHITE,
+                    )
 
     def _teken_huis(self) -> None:
         """Teken het huis."""

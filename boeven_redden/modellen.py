@@ -44,6 +44,16 @@ class Huis:
 
 
 @dataclass
+class Weg:
+    """Een rechthoekig stuk weg."""
+
+    x: float
+    y: float
+    breedte: int
+    hoogte: int
+
+
+@dataclass
 class InvoerStatus:
     """Welke rijtoetsen nu zijn ingedrukt."""
 

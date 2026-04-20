@@ -9,6 +9,7 @@ Een Python-spel gemaakt met [Arcade 3](https://api.arcade.academy/).
 - Politieauto's achtervolgen jou en proberen jouw auto te slopen
 - Je auto heeft een levensbalk - als die op nul is, is het game over
 - Er staan nu ook huizen op de kaart waar je niet doorheen kunt rijden
+- Er zijn wegen en op de weg rijdt jouw auto sneller
 - De map is nu veel groter en het scherm schuift mee als je naar de rand rijdt
 - Het spel gaat eindeloos door, maar er komt steeds meer politie!
 
