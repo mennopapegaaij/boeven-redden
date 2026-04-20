@@ -1,5 +1,7 @@
 """Het Arcade-venster van het spel."""
 
+import math
+
 import arcade
 
 from .helpers import klem
@@ -61,6 +63,7 @@ class BoevenReddenVenster(arcade.Window):
 
         self.hud_camera.use()
         self._teken_hud()
+        self._teken_richtingspijl()
 
         if self.spel.status == STATUS_GAME_OVER:
             self._teken_game_over()
@@ -278,6 +281,82 @@ class BoevenReddenVenster(arcade.Window):
             )
 
         arcade.draw_text("Auto:", balk_x - 44, balk_y - 8, arcade.color.WHITE, 11)
+
+    def _geef_richtingsdoel(self) -> tuple[float, float, str] | None:
+        """Kies waar het groene pijltje naartoe moet wijzen."""
+
+        if self.spel.boefen_mee > 0:
+            return self.spel.huis.x, self.spel.huis.y, "HUIS"
+
+        if self.spel.boefen:
+            boef = self.spel.boefen[0]
+            return boef.x, boef.y, "BOEF"
+
+        return None
+
+    def _teken_richtingspijl(self) -> None:
+        """Teken een groen pijltje naar het huidige doel."""
+
+        if self.spel.status == STATUS_GAME_OVER:
+            return
+
+        doel = self._geef_richtingsdoel()
+        if doel is None:
+            return
+
+        doel_x, doel_y, tekst = doel
+        speler = self.spel.speler
+        dx = doel_x - speler.x
+        dy = doel_y - speler.y
+        afstand = math.hypot(dx, dy)
+        if afstand < 1:
+            return
+
+        richting_x = dx / afstand
+        richting_y = dy / afstand
+        dwars_x = -richting_y
+        dwars_y = richting_x
+
+        midden_x = VENSTER_BREEDTE // 2
+        midden_y = VENSTER_HOOGTE - 72
+        staart_lengte = 34
+        punt_lengte = 20
+        halve_breedte = 10
+
+        staart_begin_x = midden_x - richting_x * staart_lengte / 2
+        staart_begin_y = midden_y - richting_y * staart_lengte / 2
+        punt_basis_x = midden_x + richting_x * staart_lengte / 2
+        punt_basis_y = midden_y + richting_y * staart_lengte / 2
+        punt_x = punt_basis_x + richting_x * punt_lengte
+        punt_y = punt_basis_y + richting_y * punt_lengte
+
+        arcade.draw_circle_filled(midden_x, midden_y, 34, (0, 0, 0, 130))
+        arcade.draw_line(
+            staart_begin_x,
+            staart_begin_y,
+            punt_basis_x,
+            punt_basis_y,
+            arcade.color.LIME_GREEN,
+            6,
+        )
+        arcade.draw_triangle_filled(
+            punt_x,
+            punt_y,
+            punt_basis_x + dwars_x * halve_breedte,
+            punt_basis_y + dwars_y * halve_breedte,
+            punt_basis_x - dwars_x * halve_breedte,
+            punt_basis_y - dwars_y * halve_breedte,
+            arcade.color.LIME_GREEN,
+        )
+        arcade.draw_text(
+            tekst,
+            midden_x,
+            midden_y - 28,
+            arcade.color.LIME_GREEN,
+            12,
+            bold=True,
+            anchor_x="center",
+        )
 
     def _teken_game_over(self) -> None:
         """Teken het game over scherm."""
